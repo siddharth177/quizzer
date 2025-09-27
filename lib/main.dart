@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:quizzer/services/quiz_data.dart';
 import 'models/quiz.dart';
@@ -17,6 +18,8 @@ class QuizApp extends StatelessWidget {
       title: 'AI Quiz App',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const QuizSetupScreen(),
+      debugShowCheckedModeBanner: false,
+      debugShowMaterialGrid: false,
     );
   }
 }
@@ -34,29 +37,6 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
   int numberOfQuestions = 5;
   bool isLoading = false;
 
-  Future<List<Quiz>> fetchQuestions(QuizTopic topicData) async {
-    List<Quiz> quizzes = [];
-    int batches = (topicData.numberOfQuestions / 10).ceil();
-
-    for (int i = 0; i < batches; i++) {
-      int batchCount = (topicData.numberOfQuestions - quizzes.length >= 10)
-          ? 10
-          : (topicData.numberOfQuestions - quizzes.length);
-
-      final data = await getQuizData(topicData);
-
-
-        final content = data["choices"][0]["message"]["content"];
-
-        try {
-          quizzes.addAll(Quiz.listFromJson(content));
-        } catch (e) {
-          print("Error parsing quiz JSON: $e");
-        }
-    }
-    return quizzes;
-  }
-
   void startQuiz() async {
     final topicData = QuizTopic()
       ..topic = topicController.text
@@ -64,7 +44,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
       ..numberOfQuestions = numberOfQuestions;
 
     setState(() => isLoading = true);
-    final questions = await fetchQuestions(topicData);
+    final questions = await getQuizData(topicData);
     setState(() => isLoading = false);
 
     if (questions.isNotEmpty) {
@@ -75,9 +55,9 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No questions received.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No questions received.")));
     }
   }
 
@@ -116,7 +96,9 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
             isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                onPressed: startQuiz, child: const Text("Start Quiz")),
+                    onPressed: startQuiz,
+                    child: const Text("Start Quiz"),
+                  ),
           ],
         ),
       ),
@@ -126,6 +108,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
 
 class QuizScreen extends StatefulWidget {
   final List<Quiz> questions;
+
   const QuizScreen({super.key, required this.questions});
 
   @override
@@ -139,7 +122,8 @@ class _QuizScreenState extends State<QuizScreen> {
   void checkAnswer(String answer) {
     final correctAnswer = widget.questions[currentIndex].answer;
     setState(() {
-      isCorrect = (answer.toLowerCase() == correctAnswer.toLowerCase());
+      isCorrect =
+          (answer.trim().toLowerCase() == correctAnswer.trim().toLowerCase());
     });
   }
 
@@ -153,8 +137,7 @@ class _QuizScreenState extends State<QuizScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ResultScreen(total: widget.questions.length),
+          builder: (context) => ResultScreen(total: widget.questions.length),
         ),
       );
     }
@@ -163,6 +146,8 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     final q = widget.questions[currentIndex];
+    final isMcq = q.options.isNotEmpty; // 👈 differentiate MCQ vs Fill
+    final answerController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(title: Text("Question ${currentIndex + 1}")),
@@ -174,32 +159,63 @@ class _QuizScreenState extends State<QuizScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                Text(q.question,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  q.question,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 20),
-                ...q.options.map((opt) {
-                  return ListTile(
-                    title: Text(opt.option),
-                    onTap: () => checkAnswer(opt.option),
-                    trailing: isCorrect == null
-                        ? null
-                        : (opt.option == q.answer
-                        ? const Icon(Icons.check, color: Colors.green)
-                        : (isCorrect == false &&
-                        opt.option != q.answer
-                        ? const Icon(Icons.close, color: Colors.red)
-                        : null)),
-                  );
-                }),
-                const SizedBox(height: 20),
-                if (isCorrect != null)
-                  ElevatedButton(
-                      onPressed: nextQuestion,
-                      child: Text(currentIndex ==
-                          widget.questions.length - 1
-                          ? "Finish"
-                          : "Next"))
+
+                // --- MCQ UI ---
+                if (isMcq)
+                  ...q.options.map((opt) {
+                    return ListTile(
+                      title: Text(opt.option),
+                      onTap: () => checkAnswer(opt.option),
+                      trailing: isCorrect == null
+                          ? null
+                          : (opt.option == q.answer
+                                ? const Icon(Icons.check, color: Colors.green)
+                                : (isCorrect == false && opt.option != q.answer
+                                      ? const Icon(
+                                          Icons.close,
+                                          color: Colors.red,
+                                        )
+                                      : null)),
+                    );
+                  }),
+
+                // --- Fill-in-the-blank UI ---
+                if (!isMcq)
+                  Column(
+                    children: [
+                      TextField(
+                        controller: answerController,
+                        decoration: const InputDecoration(
+                          labelText: "Type your answer",
+                          border: OutlineInputBorder(),
+                        ),
+                        onSubmitted: (val) {
+                          checkAnswer(val);
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      if (isCorrect != null) // show button after submission
+                        ElevatedButton(
+                          onPressed: () {
+                            answerController.clear();
+                            nextQuestion();
+                          },
+                          child: Text(
+                            currentIndex == widget.questions.length - 1
+                                ? "Finish"
+                                : "Next",
+                          ),
+                        ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -211,6 +227,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
 class ResultScreen extends StatelessWidget {
   final int total;
+
   const ResultScreen({super.key, required this.total});
 
   @override
