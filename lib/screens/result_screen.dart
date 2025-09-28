@@ -20,6 +20,7 @@ class ResultScreen extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
           children: [
             Text("Total Questions: $total",
                 style: const TextStyle(fontSize: 18)),

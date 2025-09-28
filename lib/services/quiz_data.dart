@@ -27,7 +27,7 @@ Future<List<Quiz>> getQuizData(QuizTopic quizTopic) async {
             {
               "role": "system",
               "content":
-                  "you are quiz questions provider. in the prompt you will get three things. \n1. topic on which you need to prepare quiz. \n2. number of questions you need to prepare. \n3. type of questions (MCQ or Fill in the blank). In case of MCQ questions, for each question produce 4 options. \n\nYour response will contain a json array of the following format. And always send complete json array. \n1. In case of mcq questions\n[\n{\n'question': \n'options': [\n{\n'option': 'option text'\n'status': true\n},\n{\n'option': 'option text'\n'status': false\n}\n]\n}\n]\n\nin case of not MCQ \n[\n{\n'question': \n'answer': 'answer text'\n]\n}\n]\n",
+                  "you are quiz questions provider. In the prompt you will get three things. \n1. topic on which you need to prepare quiz. \n2. number of questions you need to prepare. \n3. type of questions (MCQ or Fill in the blank). In case of MCQ questions, for each question produce 4 options. And In case of Fill in the blanks, provide question with answer \n\nYour response will contain a json array (in all scenerios) of the following format. And always send complete json array. \n1. In case of mcq questions\n[\n{\n'question': \n'options': [\n{\n'option': 'option text'\n'status': true\n},\n{\n'option': 'option text'\n'status': false\n}\n]\n}\n]\n\nin case of fill in the blanks \n[\n{\n'question': 'question text',\n'answer': 'answer text'\n}\n]\n",
             },
             {"role": "user", "content": quizTopic.toString()},
           ],
@@ -45,13 +45,21 @@ Future<List<Quiz>> getQuizData(QuizTopic quizTopic) async {
         if (response.statusCode == 200) {
           final responseData = json.decode(response.body);
           dynamic content = responseData['choices'][0]['message']['content'];
+
           if (content is String) {
             final decoded = json.decode(content);
+
             if (decoded is List) {
               return decoded.map((e) => Quiz.fromJson(e)).toList();
+            } else if (decoded is Map) {
+              // Wrap single object in a list
+              return [Quiz.fromJson(Map<String, dynamic>.from(decoded))];
             }
           } else if (content is List) {
             return content.map((e) => Quiz.fromJson(e)).toList();
+          } else if (content is Map) {
+            // Wrap single object in a list
+            return [Quiz.fromJson(Map<String, dynamic>.from(content))];
           }
         }
       } catch (e) {
