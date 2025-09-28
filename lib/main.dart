@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:quizzer/services/quiz_data.dart';
 import 'models/quiz.dart';
@@ -59,14 +57,24 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No questions received. Check the quiz topic and try again.")),
+          SnackBar(
+            content: Text(
+              "No questions received. Check the quiz topic and try again.",
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     } catch (e) {
       setState(() => isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to fetch questions from AI Model. Please try again later.")),
+        SnackBar(
+          content: const Text(
+            "Failed to fetch questions from AI Model. Please try again later.",
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     }
   }
@@ -74,35 +82,74 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Setup Quiz")),
+      appBar: AppBar(title: const Text("AI Quizzer")),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(26),
         child: Column(
           children: [
             TextField(
               controller: topicController,
               decoration: const InputDecoration(labelText: "Enter Topic"),
             ),
-            DropdownButton<QuizType>(
+            SizedBox(height: 20),
+            DropdownButtonFormField<QuizType>(
               value: quizType,
-              onChanged: (val) => setState(() => quizType = val!),
+              decoration: InputDecoration(
+                labelText: "Select Quiz Type",
+                labelStyle: const TextStyle(fontSize: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.secondary, // secondary theme color
+                    width: 1.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).primaryColor, // primary theme color
+                    width: 2,
+                  ),
+                ),
+              ),
               items: QuizType.values.map((e) {
                 return DropdownMenuItem(
                   value: e,
-                  child: Text(e == QuizType.mcq ? "MCQ" : "Fill in the Blank"),
+                  child: Text(
+                    e == QuizType.mcq ? "MCQ" : "Fill in the Blank",
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 );
               }).toList(),
+              onChanged: (val) => setState(() => quizType = val!),
+              dropdownColor: Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withOpacity(1),
+              // secondary theme color background
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: Theme.of(context).primaryColor, // primary theme color
+              ),
             ),
+            SizedBox(height: 20),
             Slider(
               value: numberOfQuestions.toDouble(),
               min: 1,
               max: 30,
-              divisions: 29,
+              divisions: 60,
               label: "$numberOfQuestions",
               onChanged: (val) =>
                   setState(() => numberOfQuestions = val.toInt()),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
             isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
