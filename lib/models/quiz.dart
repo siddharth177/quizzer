@@ -12,7 +12,7 @@ class Quiz {
     if (json.containsKey('options') && json['options'] is List) {
       var optionsList = json['options'] as List;
       var correctOption = optionsList.firstWhere(
-        (opt) => opt is Map<String, dynamic> && opt['status'] == 'correct',
+        (opt) => opt is Map<String, dynamic> && opt['status'] == true,
         orElse: () => null,
       );
       if (correctOption != null) {
@@ -47,7 +47,7 @@ class Option {
   factory Option.fromJson(Map<String, dynamic> json) {
     return Option(
       option: json['option'] ?? '',
-      isCorrect: json['status'],
+      isCorrect: json['status'] == true,
     );
   }
 
