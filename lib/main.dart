@@ -44,20 +44,30 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
       ..numberOfQuestions = numberOfQuestions;
 
     setState(() => isLoading = true);
-    final questions = await getQuizData(topicData);
-    setState(() => isLoading = false);
 
-    if (questions.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => QuizScreen(questions: questions),
-        ),
+    try {
+      final questions = await getQuizData(topicData);
+
+      setState(() => isLoading = false);
+
+      if (questions.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuizScreen(questions: questions),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No questions received. Check the quiz topic and try again.")),
+        );
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to fetch questions from AI Model. Please try again later.")),
       );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("No questions received.")));
     }
   }
 
