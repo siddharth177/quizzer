@@ -70,7 +70,16 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
           children: [
             TextField(
               controller: topicController,
-              decoration: const InputDecoration(labelText: "Enter Topic"),
+              decoration: InputDecoration(
+                labelText: "Enter Topic",
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    topicController.clear();
+                    setState(() {}); // optional: to rebuild if needed
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<QuizType>(
