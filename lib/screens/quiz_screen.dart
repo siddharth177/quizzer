@@ -14,12 +14,18 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   int currentIndex = 0;
   bool? isCorrect;
+  int attempted = 0;
+  int correct = 0;
 
   void checkAnswer(String answer) {
     final correctAnswer = widget.questions[currentIndex].answer;
+    final isRight =
+    (answer.trim().toLowerCase() == correctAnswer.trim().toLowerCase());
+
     setState(() {
-      isCorrect =
-      (answer.trim().toLowerCase() == correctAnswer.trim().toLowerCase());
+      isCorrect = isRight;
+      attempted++;
+      if (isRight) correct++;
     });
   }
 
@@ -33,7 +39,11 @@ class _QuizScreenState extends State<QuizScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultScreen(total: widget.questions.length),
+          builder: (context) => ResultScreen(
+            total: widget.questions.length,
+            attempted: attempted,
+            correct: correct,
+          ),
         ),
       );
     }
