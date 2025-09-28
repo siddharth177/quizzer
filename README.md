@@ -8,6 +8,7 @@ An AI-Powered Quiz App.
 
 Quizzer is an AI-powered quiz application designed specifically for students to practice and reinforce their learning. Users can choose a topic, select the type of quiz (MCQ or Fill in the Blank), and set the number of questions they want to attempt. The app leverages AI to dynamically generate relevant questions for any topic.
 
+Try: https://siddharth177.github.io/quizzer/
 ---
 
 ## Features
