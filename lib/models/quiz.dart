@@ -47,7 +47,7 @@ class Option {
   factory Option.fromJson(Map<String, dynamic> json) {
     return Option(
       option: json['option'] ?? '',
-      isCorrect: json['status'] == 'correct',
+      isCorrect: json['status'],
     );
   }
 
