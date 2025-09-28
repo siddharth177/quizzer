@@ -66,6 +66,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
       body: Padding(
         padding: const EdgeInsets.all(26),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             TextField(
               controller: topicController,
