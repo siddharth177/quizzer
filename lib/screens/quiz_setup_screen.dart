@@ -4,11 +4,19 @@ import '../models/quiz_topic.dart';
 import 'quiz_screen.dart';
 
 class QuizSetupScreen extends StatefulWidget {
-  const QuizSetupScreen({super.key});
+  final VoidCallback onToggleTheme;
+  final ThemeMode themeMode;
+
+  const QuizSetupScreen({
+    super.key,
+    required this.onToggleTheme,
+    required this.themeMode,
+  });
 
   @override
   State<QuizSetupScreen> createState() => _QuizSetupScreenState();
 }
+
 
 class _QuizSetupScreenState extends State<QuizSetupScreen> {
   final topicController = TextEditingController();
@@ -61,8 +69,23 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    IconData themeIcon;
+    if (widget.themeMode == ThemeMode.system) {
+      themeIcon = Icons.brightness_auto;
+    } else if (widget.themeMode == ThemeMode.light) {
+      themeIcon = Icons.light_mode;
+    } else {
+      themeIcon = Icons.dark_mode;
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text("AI Quizzer")),
+      appBar: AppBar(
+        title: const Text("AI Quizzer"),
+        leading: IconButton(
+          icon: Icon(themeIcon),
+          onPressed: widget.onToggleTheme,
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(26),
         child: Column(
