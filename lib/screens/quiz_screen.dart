@@ -208,22 +208,25 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
 
             // Navigation Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: previousQuestion,
-                  child: Text(currentIndex == 0 ? "Exit Quiz" : "Previous"),
-                ),
-                ElevatedButton(
-                  onPressed: nextQuestion,
-                  child: Text(
-                    currentIndex == widget.questions.length - 1
-                        ? "Submit"
-                        : "Next",
+            Padding(
+              padding: const EdgeInsets.only(top: 26.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: previousQuestion,
+                    child: Text(currentIndex == 0 ? "Exit Quiz" : "Previous"),
                   ),
-                ),
-              ],
+                  ElevatedButton(
+                    onPressed: nextQuestion,
+                    child: Text(
+                      currentIndex == widget.questions.length - 1
+                          ? "Submit"
+                          : "Next",
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

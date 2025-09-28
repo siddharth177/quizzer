@@ -52,13 +52,11 @@ Future<List<Quiz>> getQuizData(QuizTopic quizTopic) async {
             if (decoded is List) {
               return decoded.map((e) => Quiz.fromJson(e)).toList();
             } else if (decoded is Map) {
-              // Wrap single object in a list
               return [Quiz.fromJson(Map<String, dynamic>.from(decoded))];
             }
           } else if (content is List) {
             return content.map((e) => Quiz.fromJson(e)).toList();
           } else if (content is Map) {
-            // Wrap single object in a list
             return [Quiz.fromJson(Map<String, dynamic>.from(content))];
           }
         }
