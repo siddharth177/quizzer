@@ -22,6 +22,7 @@ class ResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text("Results")),
       body: Padding(
         padding: const EdgeInsets.all(16),
